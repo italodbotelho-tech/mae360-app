@@ -10,14 +10,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { useTranslation, type Language } from '@/lib/i18n';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
 
 interface Post {
   id: string;
-  author_name: string;
+  user_id: string;
   content: string;
-  likes: number;
-  comments: number;
+  image_url: string | null;
+  likes_count: number;
+  comments_count: number;
   created_at: string;
+  profiles: {
+    full_name: string;
+    avatar_url: string | null;
+  };
 }
 
 export default function CommunityModule() {
@@ -43,15 +49,22 @@ export default function CommunityModule() {
   const fetchPosts = async () => {
     try {
       const { data, error } = await supabase
-        .from('community_posts')
-        .select('*')
+        .from('posts')
+        .select(`
+          *,
+          profiles (
+            full_name,
+            avatar_url
+          )
+        `)
         .order('created_at', { ascending: false })
-        .limit(10);
+        .limit(20);
 
       if (error) throw error;
       setPosts(data || []);
     } catch (error) {
       console.error('Erro ao buscar posts:', error);
+      toast.error('Erro ao carregar posts');
     } finally {
       setLoading(false);
     }
@@ -61,7 +74,8 @@ export default function CommunityModule() {
     e.preventDefault();
     
     if (!user) {
-      router.push('/login');
+      toast.error('Faça login para postar');
+      router.push('/auth/login');
       return;
     }
 
@@ -70,23 +84,21 @@ export default function CommunityModule() {
     setPosting(true);
 
     try {
-      // Buscar nome do usuário
-      const { data: userData } = await supabase
-        .from('users')
-        .select('name')
-        .eq('id', user.id)
-        .single();
-
       const { data, error } = await supabase
-        .from('community_posts')
+        .from('posts')
         .insert({
           user_id: user.id,
-          author_name: userData?.name || 'Usuário',
           content: newPostContent,
-          likes: 0,
-          comments: 0,
+          likes_count: 0,
+          comments_count: 0,
         })
-        .select()
+        .select(`
+          *,
+          profiles (
+            full_name,
+            avatar_url
+          )
+        `)
         .single();
 
       if (error) throw error;
@@ -94,9 +106,10 @@ export default function CommunityModule() {
       // Adicionar novo post ao topo da lista
       setPosts([data, ...posts]);
       setNewPostContent('');
+      toast.success('Post criado com sucesso!');
     } catch (error) {
       console.error('Erro ao criar post:', error);
-      alert('Erro ao criar post. Tente novamente.');
+      toast.error('Erro ao criar post. Tente novamente.');
     } finally {
       setPosting(false);
     }
@@ -104,24 +117,54 @@ export default function CommunityModule() {
 
   const handleLike = async (postId: string, currentLikes: number) => {
     if (!user) {
-      router.push('/login');
+      toast.error('Faça login para curtir');
+      router.push('/auth/login');
       return;
     }
 
     try {
-      const { error } = await supabase
-        .from('community_posts')
-        .update({ likes: currentLikes + 1 })
-        .eq('id', postId);
+      // Verificar se já deu like
+      const { data: existingLike } = await supabase
+        .from('likes')
+        .select('id')
+        .eq('post_id', postId)
+        .eq('user_id', user.id)
+        .single();
 
-      if (error) throw error;
+      if (existingLike) {
+        // Remover like
+        await supabase
+          .from('likes')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', user.id);
 
-      // Atualizar estado local
-      setPosts(posts.map(post => 
-        post.id === postId ? { ...post, likes: currentLikes + 1 } : post
-      ));
+        await supabase
+          .from('posts')
+          .update({ likes_count: currentLikes - 1 })
+          .eq('id', postId);
+
+        setPosts(posts.map(post => 
+          post.id === postId ? { ...post, likes_count: currentLikes - 1 } : post
+        ));
+      } else {
+        // Adicionar like
+        await supabase
+          .from('likes')
+          .insert({ post_id: postId, user_id: user.id });
+
+        await supabase
+          .from('posts')
+          .update({ likes_count: currentLikes + 1 })
+          .eq('id', postId);
+
+        setPosts(posts.map(post => 
+          post.id === postId ? { ...post, likes_count: currentLikes + 1 } : post
+        ));
+      }
     } catch (error) {
       console.error('Erro ao curtir post:', error);
+      toast.error('Erro ao curtir post');
     }
   };
 
@@ -228,7 +271,14 @@ export default function CommunityModule() {
               <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
                 <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Nenhum post ainda</h3>
-                <p className="text-gray-600">Seja a primeira a compartilhar algo!</p>
+                <p className="text-gray-600 mb-4">Seja a primeira a compartilhar algo!</p>
+                {!user && (
+                  <Link href="/auth/cadastro">
+                    <Button className="bg-gradient-to-r from-pink-500 to-purple-600">
+                      Criar conta grátis
+                    </Button>
+                  </Link>
+                )}
               </div>
             ) : (
               <div className="space-y-6">
@@ -237,22 +287,29 @@ export default function CommunityModule() {
                     <div className="flex items-start gap-4 mb-4">
                       <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(idx)} flex-shrink-0`} />
                       <div className="flex-1">
-                        <div className="font-bold">{post.author_name}</div>
+                        <div className="font-bold">{post.profiles?.full_name || 'Usuário'}</div>
                         <div className="text-sm text-gray-500">{getTimeAgo(post.created_at)}</div>
                       </div>
                     </div>
-                    <p className="text-gray-700 mb-4">{post.content}</p>
+                    <p className="text-gray-700 mb-4 whitespace-pre-wrap">{post.content}</p>
+                    {post.image_url && (
+                      <img 
+                        src={post.image_url} 
+                        alt="Post" 
+                        className="w-full rounded-xl mb-4 max-h-96 object-cover"
+                      />
+                    )}
                     <div className="flex items-center gap-6 pt-4 border-t">
                       <button 
-                        onClick={() => handleLike(post.id, post.likes)}
+                        onClick={() => handleLike(post.id, post.likes_count)}
                         className="flex items-center gap-2 text-gray-600 hover:text-pink-600 transition-colors"
                       >
                         <Heart className="w-5 h-5" />
-                        <span className="font-semibold">{post.likes}</span>
+                        <span className="font-semibold">{post.likes_count}</span>
                       </button>
                       <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors">
                         <MessageCircle className="w-5 h-5" />
-                        <span className="font-semibold">{post.comments}</span>
+                        <span className="font-semibold">{post.comments_count}</span>
                       </button>
                     </div>
                   </div>
@@ -262,6 +319,24 @@ export default function CommunityModule() {
           </div>
 
           <div className="space-y-8">
+            {/* User Status */}
+            {!user && (
+              <div className="bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
+                <h3 className="text-xl font-bold mb-2">Junte-se à comunidade!</h3>
+                <p className="text-pink-100 mb-4">Crie sua conta e comece a compartilhar sua jornada</p>
+                <Link href="/auth/cadastro">
+                  <Button className="w-full bg-white text-purple-600 hover:bg-pink-50">
+                    Criar conta grátis
+                  </Button>
+                </Link>
+                <Link href="/auth/login">
+                  <Button variant="ghost" className="w-full mt-2 text-white hover:bg-white/20">
+                    Já tenho conta
+                  </Button>
+                </Link>
+              </div>
+            )}
+
             {/* Search */}
             <div className="bg-white rounded-2xl p-4 shadow-lg">
               <div className="relative">

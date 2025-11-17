@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Menu, X, Globe, Baby, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation, type Language } from '@/lib/i18n';
-import { getCurrentUser, signOut } from '@/lib/auth';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 export default function Navbar() {
@@ -23,8 +23,8 @@ export default function Navbar() {
 
   const checkUser = async () => {
     try {
-      const currentUser = await getCurrentUser();
-      setUser(currentUser);
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
     } catch (error) {
       setUser(null);
     } finally {
@@ -34,10 +34,11 @@ export default function Navbar() {
 
   const handleLogout = async () => {
     try {
-      await signOut();
+      await supabase.auth.signOut();
       setUser(null);
       toast.success('Logout realizado com sucesso!');
       router.push('/');
+      router.refresh();
     } catch (error) {
       toast.error('Erro ao fazer logout');
     }
@@ -75,11 +76,9 @@ export default function Navbar() {
             <Link href="/#pricing" className="text-gray-700 hover:text-pink-600 transition-colors font-medium">
               {t.nav.pricing}
             </Link>
-            {user && (
-              <Link href="/membros" className="text-gray-700 hover:text-pink-600 transition-colors font-medium">
-                Área de Membros
-              </Link>
-            )}
+            <Link href="/comunidade" className="text-gray-700 hover:text-pink-600 transition-colors font-medium">
+              Comunidade
+            </Link>
           </div>
 
           {/* Actions */}
@@ -116,12 +115,12 @@ export default function Navbar() {
                   </>
                 ) : (
                   <>
-                    <Link href="/login">
+                    <Link href="/auth/login">
                       <Button variant="ghost" size="sm">
                         {t.nav.login}
                       </Button>
                     </Link>
-                    <Link href="/cadastro">
+                    <Link href="/auth/cadastro">
                       <Button 
                         size="sm"
                         className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
@@ -169,15 +168,13 @@ export default function Navbar() {
               >
                 {t.nav.pricing}
               </Link>
-              {user && (
-                <Link 
-                  href="/membros" 
-                  className="text-gray-700 hover:text-pink-600 transition-colors font-medium px-4 py-2"
-                  onClick={() => setIsOpen(false)}
-                >
-                  Área de Membros
-                </Link>
-              )}
+              <Link 
+                href="/comunidade" 
+                className="text-gray-700 hover:text-pink-600 transition-colors font-medium px-4 py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Comunidade
+              </Link>
               <div className="flex flex-col gap-2 px-4 pt-4 border-t border-gray-200">
                 <Button
                   variant="ghost"
@@ -211,12 +208,12 @@ export default function Navbar() {
                       </>
                     ) : (
                       <>
-                        <Link href="/login">
+                        <Link href="/auth/login">
                           <Button variant="ghost" size="sm" className="w-full justify-start">
                             {t.nav.login}
                           </Button>
                         </Link>
-                        <Link href="/cadastro">
+                        <Link href="/auth/cadastro">
                           <Button 
                             size="sm"
                             className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white w-full"
