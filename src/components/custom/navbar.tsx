@@ -79,6 +79,15 @@ export default function Navbar() {
             <Link href="/comunidade" className="text-gray-700 hover:text-pink-600 transition-colors font-medium">
               Comunidade
             </Link>
+            <Link href="/sono-bebe" className="text-gray-700 hover:text-pink-600 transition-colors font-medium">
+              Sono do Bebê
+            </Link>
+            <Link href="/vacinas-bebe" className="text-gray-700 hover:text-pink-600 transition-colors font-medium">
+              Vacinas
+            </Link>
+            <Link href="/parto" className="text-gray-700 hover:text-pink-600 transition-colors font-medium">
+              Parto
+            </Link>
           </div>
 
           {/* Actions */}
@@ -174,6 +183,27 @@ export default function Navbar() {
                 onClick={() => setIsOpen(false)}
               >
                 Comunidade
+              </Link>
+              <Link 
+                href="/sono-bebe" 
+                className="text-gray-700 hover:text-pink-600 transition-colors font-medium px-4 py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Sono do Bebê
+              </Link>
+              <Link 
+                href="/vacinas-bebe" 
+                className="text-gray-700 hover:text-pink-600 transition-colors font-medium px-4 py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Vacinas
+              </Link>
+              <Link 
+                href="/parto" 
+                className="text-gray-700 hover:text-pink-600 transition-colors font-medium px-4 py-2"
+                onClick={() => setIsOpen(false)}
+              >
+                Parto
               </Link>
               <div className="flex flex-col gap-2 px-4 pt-4 border-t border-gray-200">
                 <Button

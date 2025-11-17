@@ -1,385 +1,449 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-import { 
-  Syringe, Plus, Calendar, CheckCircle2, AlertCircle,
-  ArrowLeft, Upload, Bell, TrendingUp, Shield
-} from 'lucide-react';
+import { Syringe, AlertTriangle, CheckCircle2, Calendar, Shield, Info, Bell } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useTranslation, type Language } from '@/lib/i18n';
+import { Badge } from '@/components/ui/badge';
 
-export default function BabyVaccinesModule() {
-  const [language] = useState<Language>('pt');
-  const t = useTranslation(language);
+export default function VacinasPage() {
+  const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
 
-  const vaccines = [
+  const vaccineSchedule = [
     {
-      name: 'BCG',
+      month: 0,
       age: 'Ao nascer',
-      applied: true,
-      date: '15/01/2024',
-      lot: 'BCG2024A',
-      location: 'Hospital Maternidade',
-      professional: 'Enf. Maria Silva',
-      nextDose: null
+      vaccines: [
+        {
+          name: 'BCG',
+          doses: 'Dose única',
+          importance: 'Protege contra formas graves de tuberculose, especialmente meningite tuberculosa',
+          diseases: ['Tuberculose'],
+          sideEffects: 'Pequena ferida no local que cicatriza em até 3 meses',
+          color: 'from-red-400 to-red-600'
+        },
+        {
+          name: 'Hepatite B',
+          doses: '1ª dose',
+          importance: 'Previne hepatite B, que pode causar cirrose e câncer de fígado',
+          diseases: ['Hepatite B'],
+          sideEffects: 'Dor local leve, raramente febre baixa',
+          color: 'from-orange-400 to-orange-600'
+        }
+      ]
     },
     {
-      name: 'Hepatite B',
-      age: 'Ao nascer',
-      applied: true,
-      date: '15/01/2024',
-      lot: 'HEPB2024B',
-      location: 'Hospital Maternidade',
-      professional: 'Enf. Maria Silva',
-      nextDose: null
-    },
-    {
-      name: 'Pentavalente (DTP+Hib+HepB)',
+      month: 2,
       age: '2 meses',
-      applied: true,
-      date: '15/03/2024',
-      lot: 'PENTA2024C',
-      location: 'UBS Centro',
-      professional: 'Enf. João Santos',
-      nextDose: '15/05/2024'
+      vaccines: [
+        {
+          name: 'Pentavalente',
+          doses: '1ª dose',
+          importance: 'Protege contra 5 doenças graves de uma só vez',
+          diseases: ['Difteria', 'Tétano', 'Coqueluche', 'Haemophilus influenzae tipo b', 'Hepatite B'],
+          sideEffects: 'Febre, irritabilidade, dor local',
+          color: 'from-purple-400 to-purple-600'
+        },
+        {
+          name: 'VIP (Poliomielite)',
+          doses: '1ª dose',
+          importance: 'Previne paralisia infantil',
+          diseases: ['Poliomielite'],
+          sideEffects: 'Muito raros, geralmente bem tolerada',
+          color: 'from-blue-400 to-blue-600'
+        },
+        {
+          name: 'Pneumocócica 10',
+          doses: '1ª dose',
+          importance: 'Protege contra pneumonia, meningite e otite',
+          diseases: ['Pneumonia', 'Meningite', 'Otite'],
+          sideEffects: 'Febre, irritabilidade, vermelhidão local',
+          color: 'from-cyan-400 to-cyan-600'
+        },
+        {
+          name: 'Rotavírus',
+          doses: '1ª dose',
+          importance: 'Previne diarreia grave por rotavírus',
+          diseases: ['Diarreia por rotavírus'],
+          sideEffects: 'Raramente irritabilidade leve',
+          color: 'from-green-400 to-green-600'
+        }
+      ]
     },
     {
-      name: 'VIP (Poliomielite)',
-      age: '2 meses',
-      applied: true,
-      date: '15/03/2024',
-      lot: 'VIP2024D',
-      location: 'UBS Centro',
-      professional: 'Enf. João Santos',
-      nextDose: '15/05/2024'
-    },
-    {
-      name: 'Rotavírus',
-      age: '2 meses',
-      applied: true,
-      date: '15/03/2024',
-      lot: 'ROTA2024E',
-      location: 'UBS Centro',
-      professional: 'Enf. João Santos',
-      nextDose: '15/05/2024'
-    },
-    {
-      name: 'Pneumocócica 10',
-      age: '2 meses',
-      applied: true,
-      date: '15/03/2024',
-      lot: 'PNEU2024F',
-      location: 'UBS Centro',
-      professional: 'Enf. João Santos',
-      nextDose: '15/05/2024'
-    },
-    {
-      name: 'Meningocócica C',
+      month: 3,
       age: '3 meses',
-      applied: false,
-      date: null,
-      lot: null,
-      location: null,
-      professional: null,
-      nextDose: '15/04/2024'
+      vaccines: [
+        {
+          name: 'Meningocócica C',
+          doses: '1ª dose',
+          importance: 'Protege contra meningite meningocócica tipo C',
+          diseases: ['Meningite meningocócica C'],
+          sideEffects: 'Febre, irritabilidade, dor local',
+          color: 'from-pink-400 to-pink-600'
+        }
+      ]
     },
     {
-      name: 'Pentavalente (2ª dose)',
+      month: 4,
       age: '4 meses',
-      applied: false,
-      date: null,
-      lot: null,
-      location: null,
-      professional: null,
-      nextDose: '15/05/2024'
+      vaccines: [
+        {
+          name: 'Pentavalente',
+          doses: '2ª dose',
+          importance: 'Reforço da proteção contra as 5 doenças',
+          diseases: ['Difteria', 'Tétano', 'Coqueluche', 'Haemophilus influenzae tipo b', 'Hepatite B'],
+          sideEffects: 'Febre, irritabilidade, dor local',
+          color: 'from-purple-400 to-purple-600'
+        },
+        {
+          name: 'VIP (Poliomielite)',
+          doses: '2ª dose',
+          importance: 'Reforço contra paralisia infantil',
+          diseases: ['Poliomielite'],
+          sideEffects: 'Muito raros',
+          color: 'from-blue-400 to-blue-600'
+        },
+        {
+          name: 'Pneumocócica 10',
+          doses: '2ª dose',
+          importance: 'Reforço contra pneumonia e meningite',
+          diseases: ['Pneumonia', 'Meningite', 'Otite'],
+          sideEffects: 'Febre, irritabilidade',
+          color: 'from-cyan-400 to-cyan-600'
+        },
+        {
+          name: 'Rotavírus',
+          doses: '2ª dose',
+          importance: 'Completa proteção contra diarreia grave',
+          diseases: ['Diarreia por rotavírus'],
+          sideEffects: 'Raramente irritabilidade',
+          color: 'from-green-400 to-green-600'
+        }
+      ]
     },
     {
-      name: 'VIP (2ª dose)',
-      age: '4 meses',
-      applied: false,
-      date: null,
-      lot: null,
-      location: null,
-      professional: null,
-      nextDose: '15/05/2024'
+      month: 5,
+      age: '5 meses',
+      vaccines: [
+        {
+          name: 'Meningocócica C',
+          doses: '2ª dose',
+          importance: 'Reforço contra meningite meningocócica',
+          diseases: ['Meningite meningocócica C'],
+          sideEffects: 'Febre, irritabilidade',
+          color: 'from-pink-400 to-pink-600'
+        }
+      ]
     },
     {
-      name: 'Rotavírus (2ª dose)',
-      age: '4 meses',
-      applied: false,
-      date: null,
-      lot: null,
-      location: null,
-      professional: null,
-      nextDose: '15/05/2024'
+      month: 6,
+      age: '6 meses',
+      vaccines: [
+        {
+          name: 'Pentavalente',
+          doses: '3ª dose',
+          importance: 'Completa esquema básico de proteção',
+          diseases: ['Difteria', 'Tétano', 'Coqueluche', 'Haemophilus influenzae tipo b', 'Hepatite B'],
+          sideEffects: 'Febre, irritabilidade',
+          color: 'from-purple-400 to-purple-600'
+        },
+        {
+          name: 'VIP (Poliomielite)',
+          doses: '3ª dose',
+          importance: 'Completa proteção contra pólio',
+          diseases: ['Poliomielite'],
+          sideEffects: 'Muito raros',
+          color: 'from-blue-400 to-blue-600'
+        }
+      ]
+    },
+    {
+      month: 9,
+      age: '9 meses',
+      vaccines: [
+        {
+          name: 'Febre Amarela',
+          doses: 'Dose inicial',
+          importance: 'Protege contra febre amarela, doença grave transmitida por mosquitos',
+          diseases: ['Febre Amarela'],
+          sideEffects: 'Febre, dor local, raramente reações alérgicas',
+          color: 'from-yellow-400 to-yellow-600'
+        }
+      ]
+    },
+    {
+      month: 12,
+      age: '12 meses (1 ano)',
+      vaccines: [
+        {
+          name: 'Tríplice Viral',
+          doses: '1ª dose',
+          importance: 'Protege contra sarampo, caxumba e rubéola',
+          diseases: ['Sarampo', 'Caxumba', 'Rubéola'],
+          sideEffects: 'Febre após 5-12 dias, manchas vermelhas leves',
+          color: 'from-red-400 to-red-600'
+        },
+        {
+          name: 'Pneumocócica 10',
+          doses: 'Reforço',
+          importance: 'Reforço da proteção contra pneumonia',
+          diseases: ['Pneumonia', 'Meningite', 'Otite'],
+          sideEffects: 'Febre, irritabilidade',
+          color: 'from-cyan-400 to-cyan-600'
+        },
+        {
+          name: 'Meningocócica C',
+          doses: 'Reforço',
+          importance: 'Reforço contra meningite',
+          diseases: ['Meningite meningocócica C'],
+          sideEffects: 'Febre, irritabilidade',
+          color: 'from-pink-400 to-pink-600'
+        }
+      ]
+    },
+    {
+      month: 15,
+      age: '15 meses',
+      vaccines: [
+        {
+          name: 'DTP',
+          doses: '1º reforço',
+          importance: 'Reforço contra difteria, tétano e coqueluche',
+          diseases: ['Difteria', 'Tétano', 'Coqueluche'],
+          sideEffects: 'Febre, dor local, irritabilidade',
+          color: 'from-indigo-400 to-indigo-600'
+        },
+        {
+          name: 'VOP (Poliomielite oral)',
+          doses: '1º reforço',
+          importance: 'Reforço contra pólio (gotinha)',
+          diseases: ['Poliomielite'],
+          sideEffects: 'Muito raros',
+          color: 'from-blue-400 to-blue-600'
+        },
+        {
+          name: 'Hepatite A',
+          doses: 'Dose única',
+          importance: 'Protege contra hepatite A',
+          diseases: ['Hepatite A'],
+          sideEffects: 'Dor local leve',
+          color: 'from-orange-400 to-orange-600'
+        },
+        {
+          name: 'Tetra Viral',
+          doses: 'Dose única',
+          importance: 'Protege contra sarampo, caxumba, rubéola e varicela',
+          diseases: ['Sarampo', 'Caxumba', 'Rubéola', 'Varicela (catapora)'],
+          sideEffects: 'Febre, manchas leves',
+          color: 'from-purple-400 to-purple-600'
+        }
+      ]
+    },
+    {
+      month: 48,
+      age: '4 anos',
+      vaccines: [
+        {
+          name: 'DTP',
+          doses: '2º reforço',
+          importance: 'Último reforço do esquema infantil',
+          diseases: ['Difteria', 'Tétano', 'Coqueluche'],
+          sideEffects: 'Febre, dor local',
+          color: 'from-indigo-400 to-indigo-600'
+        },
+        {
+          name: 'VOP (Poliomielite oral)',
+          doses: '2º reforço',
+          importance: 'Último reforço contra pólio',
+          diseases: ['Poliomielite'],
+          sideEffects: 'Muito raros',
+          color: 'from-blue-400 to-blue-600'
+        }
+      ]
     }
   ];
 
-  const upToDate = vaccines.filter(v => v.applied).length;
-  const pending = vaccines.filter(v => !v.applied).length;
-  const percentage = Math.round((upToDate / vaccines.length) * 100);
-
-  const upcomingVaccines = vaccines.filter(v => !v.applied && v.nextDose).slice(0, 3);
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-red-50 via-white to-pink-50 pt-20">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-red-500 to-pink-500 text-white py-12 px-4">
-        <div className="max-w-7xl mx-auto">
-          <Link href="/" className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-4">
-            <ArrowLeft className="w-4 h-4" />
-            Voltar
-          </Link>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-              <Syringe className="w-8 h-8" />
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold">{t.vaccines.title}</h1>
-              <p className="text-red-100">{t.vaccines.subtitle} - {t.vaccines.baby}</p>
-            </div>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-purple-50 to-pink-50 pt-24 pb-12 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full mb-4">
+            <Shield className="w-5 h-5 text-blue-600" />
+            <span className="text-sm font-medium text-blue-700">Calendário Nacional</span>
           </div>
-
-          {/* Progress Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 className="w-5 h-5" />
-                <span className="text-sm">{t.vaccines.upToDate}</span>
-              </div>
-              <div className="text-3xl font-bold">{upToDate}</div>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertCircle className="w-5 h-5" />
-                <span className="text-sm">{t.vaccines.pending}</span>
-              </div>
-              <div className="text-3xl font-bold">{pending}</div>
-            </div>
-            <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-5 h-5" />
-                <span className="text-sm">Progresso</span>
-              </div>
-              <div className="text-3xl font-bold">{percentage}%</div>
-            </div>
-          </div>
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Vacinas do Bebê
+          </h1>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            Calendário completo de vacinação infantil com alertas e informações detalhadas
+          </p>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content - Vaccine List */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Actions */}
-            <div className="flex flex-wrap gap-3">
-              <Button className="bg-gradient-to-r from-red-500 to-pink-500">
-                <Plus className="w-4 h-4 mr-2" />
-                {t.vaccines.addVaccine}
-              </Button>
-              <Button variant="outline">
-                <Upload className="w-4 h-4 mr-2" />
-                Upload Carteirinha
-              </Button>
-              <Button variant="outline">
-                <Bell className="w-4 h-4 mr-2" />
-                Configurar Alertas
-              </Button>
+        {/* Alerta de Importância */}
+        <Card className="p-6 mb-8 bg-gradient-to-r from-red-500 to-orange-500 text-white">
+          <div className="flex items-start gap-4">
+            <AlertTriangle className="w-8 h-8 flex-shrink-0" />
+            <div>
+              <h2 className="text-2xl font-bold mb-2">⚠️ Vacinas Atrasadas?</h2>
+              <p className="mb-4">
+                Manter o calendário de vacinação em dia é ESSENCIAL para proteger seu bebê contra doenças graves e potencialmente fatais. 
+                Vacinas atrasadas deixam a criança vulnerável e podem comprometer a imunidade de toda a comunidade.
+              </p>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2">
+                  <span>•</span>
+                  <span>Procure o posto de saúde IMEDIATAMENTE se houver atraso</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>•</span>
+                  <span>Leve sempre a caderneta de vacinação nas consultas</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>•</span>
+                  <span>Configure lembretes para não esquecer as datas</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span>•</span>
+                  <span>Todas as vacinas do calendário básico são GRATUITAS no SUS</span>
+                </li>
+              </ul>
             </div>
+          </div>
+        </Card>
 
-            {/* Vaccines List */}
-            <div className="space-y-4">
-              {vaccines.map((vaccine, idx) => (
-                <div
-                  key={idx}
-                  className={`bg-white rounded-2xl p-6 shadow-lg border-2 transition-all ${
-                    vaccine.applied
-                      ? 'border-green-200'
-                      : 'border-orange-200 hover:border-orange-400'
-                  }`}
+        {/* Por que vacinar */}
+        <Card className="p-6 mb-8 bg-white/80 backdrop-blur-sm">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <Info className="w-6 h-6 text-blue-600" />
+            Por que vacinar é tão importante?
+          </h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="p-4 bg-blue-50 rounded-lg">
+              <h3 className="font-bold mb-2 text-blue-900">Proteção Individual</h3>
+              <p className="text-sm text-gray-700">Protege seu bebê contra doenças graves que podem causar sequelas permanentes ou morte</p>
+            </div>
+            <div className="p-4 bg-purple-50 rounded-lg">
+              <h3 className="font-bold mb-2 text-purple-900">Imunidade Coletiva</h3>
+              <p className="text-sm text-gray-700">Quando muitos se vacinam, protegem também quem não pode se vacinar (bebês muito pequenos, imunodeprimidos)</p>
+            </div>
+            <div className="p-4 bg-pink-50 rounded-lg">
+              <h3 className="font-bold mb-2 text-pink-900">Erradicação de Doenças</h3>
+              <p className="text-sm text-gray-700">Vacinas já erradicaram a varíola e quase eliminaram a poliomielite no mundo</p>
+            </div>
+          </div>
+        </Card>
+
+        {/* Calendário */}
+        <div className="space-y-6">
+          {vaccineSchedule.map((schedule) => (
+            <Card key={schedule.month} className="p-6 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-shadow">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+                    <Calendar className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold">{schedule.age}</h3>
+                    <p className="text-gray-600">{schedule.vaccines.length} vacina(s)</p>
+                  </div>
+                </div>
+                <Button
+                  variant={selectedMonth === schedule.month ? 'default' : 'outline'}
+                  onClick={() => setSelectedMonth(selectedMonth === schedule.month ? null : schedule.month)}
+                  className="gap-2"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      vaccine.applied
-                        ? 'bg-green-100'
-                        : 'bg-orange-100'
-                    }`}>
-                      {vaccine.applied ? (
-                        <CheckCircle2 className="w-6 h-6 text-green-600" />
-                      ) : (
-                        <AlertCircle className="w-6 h-6 text-orange-600" />
-                      )}
-                    </div>
+                  {selectedMonth === schedule.month ? 'Ocultar' : 'Ver'} Detalhes
+                </Button>
+              </div>
 
-                    <div className="flex-1">
+              {selectedMonth === schedule.month && (
+                <div className="mt-6 space-y-4">
+                  {schedule.vaccines.map((vaccine, idx) => (
+                    <div key={idx} className="p-4 bg-gray-50 rounded-lg border-l-4 border-blue-500">
                       <div className="flex items-start justify-between mb-3">
                         <div>
-                          <h3 className="text-xl font-bold text-gray-900">{vaccine.name}</h3>
-                          <p className="text-sm text-gray-600">{vaccine.age}</p>
+                          <h4 className="text-xl font-bold text-gray-900">{vaccine.name}</h4>
+                          <Badge className="mt-1">{vaccine.doses}</Badge>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          vaccine.applied
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-orange-100 text-orange-700'
-                        }`}>
-                          {vaccine.applied ? 'Aplicada' : 'Pendente'}
-                        </span>
+                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${vaccine.color} flex items-center justify-center`}>
+                          <Syringe className="w-6 h-6 text-white" />
+                        </div>
                       </div>
 
-                      {vaccine.applied ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-xl">
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">{t.vaccines.date}</div>
-                            <div className="font-semibold">{vaccine.date}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">{t.vaccines.lot}</div>
-                            <div className="font-semibold">{vaccine.lot}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">{t.vaccines.location}</div>
-                            <div className="font-semibold">{vaccine.location}</div>
-                          </div>
-                          <div>
-                            <div className="text-sm text-gray-600 mb-1">{t.vaccines.professional}</div>
-                            <div className="font-semibold">{vaccine.professional}</div>
-                          </div>
-                          {vaccine.nextDose && (
-                            <div className="md:col-span-2">
-                              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                                <Calendar className="w-4 h-4 text-blue-600" />
-                                <span className="text-sm text-blue-800">
-                                  Próxima dose: {vaccine.nextDose}
-                                </span>
-                              </div>
-                            </div>
-                          )}
+                      <div className="space-y-3">
+                        <div>
+                          <h5 className="font-bold text-sm text-gray-700 mb-1 flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-green-600" />
+                            Importância:
+                          </h5>
+                          <p className="text-sm text-gray-700 pl-6">{vaccine.importance}</p>
                         </div>
-                      ) : (
-                        <div className="p-4 bg-orange-50 rounded-xl">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Calendar className="w-4 h-4 text-orange-600" />
-                            <span className="text-sm font-semibold text-orange-800">
-                              Agendar para: {vaccine.nextDose}
-                            </span>
+
+                        <div>
+                          <h5 className="font-bold text-sm text-gray-700 mb-1 flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4 text-red-600" />
+                            Protege contra:
+                          </h5>
+                          <div className="flex flex-wrap gap-2 pl-6">
+                            {vaccine.diseases.map((disease, i) => (
+                              <Badge key={i} variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                                {disease}
+                              </Badge>
+                            ))}
                           </div>
-                          <Button size="sm" className="bg-orange-500 hover:bg-orange-600">
-                            Registrar Aplicação
-                          </Button>
                         </div>
-                      )}
+
+                        <div>
+                          <h5 className="font-bold text-sm text-gray-700 mb-1 flex items-center gap-2">
+                            <Info className="w-4 h-4 text-blue-600" />
+                            Possíveis reações:
+                          </h5>
+                          <p className="text-sm text-gray-600 pl-6">{vaccine.sideEffects}</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Progress Card */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-xl font-bold mb-4">Progresso da Vacinação</h3>
-              <div className="relative h-40 flex items-center justify-center mb-4">
-                <svg className="transform -rotate-90 w-32 h-32">
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="56"
-                    stroke="#f3f4f6"
-                    strokeWidth="12"
-                    fill="none"
-                  />
-                  <circle
-                    cx="64"
-                    cy="64"
-                    r="56"
-                    stroke="url(#gradient)"
-                    strokeWidth="12"
-                    fill="none"
-                    strokeDasharray={`${2 * Math.PI * 56}`}
-                    strokeDashoffset={`${2 * Math.PI * 56 * (1 - percentage / 100)}`}
-                    strokeLinecap="round"
-                  />
-                  <defs>
-                    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#ef4444" />
-                      <stop offset="100%" stopColor="#ec4899" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                <div className="absolute text-center">
-                  <div className="text-3xl font-bold text-gray-900">{percentage}%</div>
-                  <div className="text-sm text-gray-600">Completo</div>
-                </div>
-              </div>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Aplicadas</span>
-                  <span className="font-semibold">{upToDate}/{vaccines.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Pendentes</span>
-                  <span className="font-semibold text-orange-600">{pending}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Next Vaccines */}
-            <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-2xl p-6 text-white shadow-lg">
-              <div className="flex items-center gap-2 mb-4">
-                <Bell className="w-6 h-6" />
-                <h3 className="text-xl font-bold">Próximas Vacinas</h3>
-              </div>
-              <div className="space-y-3">
-                {upcomingVaccines.map((vaccine, idx) => (
-                  <div key={idx} className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                    <div className="font-semibold mb-1">{vaccine.name}</div>
-                    <div className="flex items-center gap-2 text-sm text-orange-100">
-                      <Calendar className="w-4 h-4" />
-                      <span>{vaccine.nextDose}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Info Card */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center gap-2 mb-4">
-                <Shield className="w-6 h-6 text-blue-600" />
-                <h3 className="text-xl font-bold">Informações Importantes</h3>
-              </div>
-              <div className="space-y-3 text-sm text-gray-700">
-                <p>
-                  📅 Mantenha a carteirinha sempre atualizada
-                </p>
-                <p>
-                  🔔 Configure alertas para não perder nenhuma dose
-                </p>
-                <p>
-                  📱 Leve sempre a carteirinha digital nas consultas
-                </p>
-                <p>
-                  💉 Vacinas protegem seu bebê de doenças graves
-                </p>
-              </div>
-            </div>
-
-            {/* Download Card */}
-            <div className="bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl p-6 text-white shadow-lg">
-              <h3 className="text-xl font-bold mb-4">Carteirinha Digital</h3>
-              <p className="text-sm text-blue-100 mb-4">
-                Baixe a carteirinha completa em PDF para apresentar nas consultas
-              </p>
-              <Button className="w-full bg-white text-blue-600 hover:bg-blue-50">
-                <Upload className="w-4 h-4 mr-2" />
-                Baixar PDF
-              </Button>
-            </div>
-          </div>
+              )}
+            </Card>
+          ))}
         </div>
+
+        {/* Dicas Finais */}
+        <Card className="mt-8 p-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white">
+          <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+            <CheckCircle2 className="w-6 h-6" />
+            Dicas Importantes
+          </h2>
+          <ul className="space-y-2">
+            <li className="flex items-start gap-2">
+              <span className="text-yellow-300">•</span>
+              <span>Leve a caderneta de vacinação em TODAS as consultas médicas</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-yellow-300">•</span>
+              <span>Informe o médico sobre qualquer reação anterior a vacinas</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-yellow-300">•</span>
+              <span>Não há problema em tomar várias vacinas no mesmo dia</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-yellow-300">•</span>
+              <span>Febre leve após vacina é normal - use antitérmico se necessário</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-yellow-300">•</span>
+              <span>Configure lembretes no celular para não esquecer as datas</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-yellow-300">•</span>
+              <span>Em caso de dúvidas, procure sempre um profissional de saúde</span>
+            </li>
+          </ul>
+        </Card>
       </div>
     </div>
   );
