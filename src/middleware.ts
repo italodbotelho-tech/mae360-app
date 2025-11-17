@@ -26,6 +26,11 @@ export async function middleware(request: NextRequest) {
     '/ia-assistente',
   ];
 
+  // Rotas de administrador
+  const adminRoutes = [
+    '/admin',
+  ];
+
   // Rotas públicas que não precisam de autenticação
   const publicRoutes = [
     '/',
@@ -44,13 +49,18 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(route)
   );
 
+  // Verificar se é uma rota de admin
+  const isAdminRoute = adminRoutes.some(route => 
+    pathname.startsWith(route)
+  );
+
   // Se for rota pública, permitir acesso
   if (isPublicRoute) {
     return NextResponse.next();
   }
 
-  // Se for rota protegida, verificar autenticação
-  if (isProtectedRoute) {
+  // Se for rota protegida ou admin, verificar autenticação
+  if (isProtectedRoute || isAdminRoute) {
     const token = request.cookies.get('sb-access-token')?.value;
 
     if (!token) {
@@ -79,6 +89,20 @@ export async function middleware(request: NextRequest) {
         loginUrl.searchParams.set('redirect', pathname);
         return NextResponse.redirect(loginUrl);
       }
+
+      // Se for rota de admin, verificar se o usuário é admin
+      if (isAdminRoute) {
+        const { data: userData, error: userError } = await supabase
+          .from('users')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single();
+
+        if (userError || !userData?.is_admin) {
+          // Redirecionar para home se não for admin
+          return NextResponse.redirect(new URL('/', request.url));
+        }
+      }
     } catch (error) {
       // Em caso de erro ou timeout, redirecionar para login
       const loginUrl = new URL('/login', request.url);
@@ -104,5 +128,6 @@ export const config = {
     '/vacinas-bebe/:path*',
     '/vacinas-mae/:path*',
     '/ia-assistente/:path*',
+    '/admin/:path*',
   ],
 };

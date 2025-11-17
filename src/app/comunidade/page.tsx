@@ -1,50 +1,159 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   Users, MessageCircle, Heart, Send, Search, 
-  Plus, ArrowLeft, TrendingUp, Award, Image as ImageIcon
+  Plus, ArrowLeft, TrendingUp, Award, Image as ImageIcon, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation, type Language } from '@/lib/i18n';
+import { supabase } from '@/lib/supabase';
+
+interface Post {
+  id: string;
+  author_name: string;
+  content: string;
+  likes: number;
+  comments: number;
+  created_at: string;
+}
 
 export default function CommunityModule() {
+  const router = useRouter();
   const [language] = useState<Language>('pt');
   const t = useTranslation(language);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newPostContent, setNewPostContent] = useState('');
+  const [posting, setPosting] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    checkUser();
+    fetchPosts();
+  }, []);
+
+  const checkUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    setUser(user);
+  };
+
+  const fetchPosts = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('community_posts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      setPosts(data || []);
+    } catch (error) {
+      console.error('Erro ao buscar posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNewPost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    if (!newPostContent.trim()) return;
+
+    setPosting(true);
+
+    try {
+      // Buscar nome do usuário
+      const { data: userData } = await supabase
+        .from('users')
+        .select('name')
+        .eq('id', user.id)
+        .single();
+
+      const { data, error } = await supabase
+        .from('community_posts')
+        .insert({
+          user_id: user.id,
+          author_name: userData?.name || 'Usuário',
+          content: newPostContent,
+          likes: 0,
+          comments: 0,
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Adicionar novo post ao topo da lista
+      setPosts([data, ...posts]);
+      setNewPostContent('');
+    } catch (error) {
+      console.error('Erro ao criar post:', error);
+      alert('Erro ao criar post. Tente novamente.');
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const handleLike = async (postId: string, currentLikes: number) => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('community_posts')
+        .update({ likes: currentLikes + 1 })
+        .eq('id', postId);
+
+      if (error) throw error;
+
+      // Atualizar estado local
+      setPosts(posts.map(post => 
+        post.id === postId ? { ...post, likes: currentLikes + 1 } : post
+      ));
+    } catch (error) {
+      console.error('Erro ao curtir post:', error);
+    }
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
+
+    if (diffInHours < 1) return 'Agora';
+    if (diffInHours < 24) return `${diffInHours}h atrás`;
+    if (diffInDays === 1) return '1 dia atrás';
+    return `${diffInDays} dias atrás`;
+  };
+
+  const getAvatarColor = (index: number) => {
+    const colors = [
+      'from-pink-500 to-rose-500',
+      'from-purple-500 to-pink-500',
+      'from-blue-500 to-cyan-500',
+      'from-green-500 to-emerald-500',
+      'from-orange-500 to-amber-500',
+    ];
+    return colors[index % colors.length];
+  };
 
   const groups = [
     { name: t.community.firstTimeMoms, members: 12450, posts: 3420, color: 'from-pink-500 to-rose-500' },
     { name: t.community.soloMoms, members: 8920, posts: 2150, color: 'from-purple-500 to-pink-500' },
     { name: t.community.trying, members: 15680, posts: 5230, color: 'from-blue-500 to-cyan-500' },
     { name: 'Gestantes 2024', members: 9340, posts: 4120, color: 'from-green-500 to-emerald-500' }
-  ];
-
-  const posts = [
-    {
-      author: 'Maria Silva',
-      time: '2h atrás',
-      content: 'Alguém mais está com enjoo constante? Estou de 8 semanas e não consigo comer quase nada 😔',
-      likes: 45,
-      comments: 23,
-      avatar: 'from-pink-500 to-rose-500'
-    },
-    {
-      author: 'Ana Costa',
-      time: '5h atrás',
-      content: 'Meu bebê dormiu 6 horas seguidas pela primeira vez! 🎉 Estou tão feliz!',
-      likes: 128,
-      comments: 67,
-      avatar: 'from-purple-500 to-pink-500'
-    },
-    {
-      author: 'Juliana Santos',
-      time: '1 dia atrás',
-      content: 'Dicas de introdução alimentar? Meu bebê vai fazer 6 meses e estou perdida...',
-      likes: 89,
-      comments: 156,
-      avatar: 'from-blue-500 to-cyan-500'
-    }
   ];
 
   return (
@@ -72,53 +181,84 @@ export default function CommunityModule() {
           <div className="lg:col-span-2 space-y-8">
             {/* New Post */}
             <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <div className="flex gap-4">
+              <form onSubmit={handleNewPost} className="flex gap-4">
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500 to-purple-500 flex-shrink-0" />
                 <div className="flex-1">
                   <textarea
-                    placeholder="Compartilhe algo com a comunidade..."
+                    value={newPostContent}
+                    onChange={(e) => setNewPostContent(e.target.value)}
+                    placeholder={user ? "Compartilhe algo com a comunidade..." : "Faça login para postar"}
                     className="w-full p-4 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     rows={3}
+                    disabled={!user || posting}
                   />
                   <div className="flex items-center justify-between mt-4">
-                    <Button variant="ghost" size="sm">
+                    <Button type="button" variant="ghost" size="sm" disabled={!user}>
                       <ImageIcon className="w-4 h-4 mr-2" />
                       Foto
                     </Button>
-                    <Button className="bg-gradient-to-r from-violet-500 to-purple-600">
-                      <Send className="w-4 h-4 mr-2" />
-                      {t.community.newPost}
+                    <Button 
+                      type="submit"
+                      disabled={!user || posting || !newPostContent.trim()}
+                      className="bg-gradient-to-r from-violet-500 to-purple-600"
+                    >
+                      {posting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Postando...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4 mr-2" />
+                          {t.community.newPost}
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
-              </div>
+              </form>
             </div>
 
             {/* Posts Feed */}
-            <div className="space-y-6">
-              {posts.map((post, idx) => (
-                <div key={idx} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
-                  <div className="flex items-start gap-4 mb-4">
-                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${post.avatar} flex-shrink-0`} />
-                    <div className="flex-1">
-                      <div className="font-bold">{post.author}</div>
-                      <div className="text-sm text-gray-500">{post.time}</div>
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+              </div>
+            ) : posts.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 shadow-lg text-center">
+                <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Nenhum post ainda</h3>
+                <p className="text-gray-600">Seja a primeira a compartilhar algo!</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {posts.map((post, idx) => (
+                  <div key={post.id} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                    <div className="flex items-start gap-4 mb-4">
+                      <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(idx)} flex-shrink-0`} />
+                      <div className="flex-1">
+                        <div className="font-bold">{post.author_name}</div>
+                        <div className="text-sm text-gray-500">{getTimeAgo(post.created_at)}</div>
+                      </div>
+                    </div>
+                    <p className="text-gray-700 mb-4">{post.content}</p>
+                    <div className="flex items-center gap-6 pt-4 border-t">
+                      <button 
+                        onClick={() => handleLike(post.id, post.likes)}
+                        className="flex items-center gap-2 text-gray-600 hover:text-pink-600 transition-colors"
+                      >
+                        <Heart className="w-5 h-5" />
+                        <span className="font-semibold">{post.likes}</span>
+                      </button>
+                      <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors">
+                        <MessageCircle className="w-5 h-5" />
+                        <span className="font-semibold">{post.comments}</span>
+                      </button>
                     </div>
                   </div>
-                  <p className="text-gray-700 mb-4">{post.content}</p>
-                  <div className="flex items-center gap-6 pt-4 border-t">
-                    <button className="flex items-center gap-2 text-gray-600 hover:text-pink-600 transition-colors">
-                      <Heart className="w-5 h-5" />
-                      <span className="font-semibold">{post.likes}</span>
-                    </button>
-                    <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors">
-                      <MessageCircle className="w-5 h-5" />
-                      <span className="font-semibold">{post.comments}</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="space-y-8">
