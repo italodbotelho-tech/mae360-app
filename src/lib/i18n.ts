@@ -32,10 +32,11 @@ export const translations = {
         price: 'R$ 0',
         period: '/mês',
         features: [
-          'Acompanhamento básico da gravidez',
+          'Acesso a conteúdos básicos',
           'Rastreador de sono do bebê',
           'Calendário de vacinas',
-          'Comunidade de mães'
+          'Comunidade online de mães',
+          'Newsletter semanal'
         ],
         cta: 'Começar Grátis'
       },
@@ -50,12 +51,27 @@ export const translations = {
           'Planejamento financeiro completo',
           'IA integrada ilimitada',
           'Upload de exames e documentos',
-          'Consultoria com especialistas',
-          'Loja com cashback',
-          'Suporte prioritário',
+          'Loja com cashback exclusivo',
           'Sem anúncios'
         ],
         cta: 'Assinar Premium'
+      },
+      maternityProgram: {
+        name: 'Programa Maternidade Financeira Premium',
+        price: 'R$ 479,00',
+        period: 'à vista OU 12x de R$ 49,00',
+        features: [
+          'Todos os 13 módulos completos',
+          'Planejamento financeiro completo',
+          'IA integrada ilimitada',
+          'Upload de exames e documentos',
+          '✨ Consultoria com especialistas',
+          'Loja com cashback exclusivo',
+          '✨ Suporte prioritário 24/7',
+          'Sem anúncios',
+          'Acesso vitalício ao programa'
+        ],
+        cta: 'Assinar Programa Premium'
       },
       enterprise: {
         name: 'Empresarial',
@@ -357,10 +373,11 @@ export const translations = {
         price: '$0',
         period: '/month',
         features: [
-          'Basic pregnancy tracking',
+          'Access to basic content',
           'Baby sleep tracker',
           'Vaccine calendar',
-          'Mothers community'
+          'Online mothers community',
+          'Weekly newsletter'
         ],
         cta: 'Start Free'
       },
@@ -375,12 +392,27 @@ export const translations = {
           'Complete financial planning',
           'Unlimited integrated AI',
           'Upload exams and documents',
-          'Expert consultancy',
-          'Shop with cashback',
-          'Priority support',
+          'Exclusive cashback shop',
           'No ads'
         ],
         cta: 'Subscribe Premium'
+      },
+      maternityProgram: {
+        name: 'Premium Financial Maternity Program',
+        price: '$95.80',
+        period: 'one-time OR 12x $9.80',
+        features: [
+          'All 13 complete modules',
+          'Complete financial planning',
+          'Unlimited integrated AI',
+          'Upload exams and documents',
+          '✨ Expert consultancy',
+          'Exclusive cashback shop',
+          '✨ Priority 24/7 support',
+          'No ads',
+          'Lifetime program access'
+        ],
+        cta: 'Subscribe Premium Program'
       },
       enterprise: {
         name: 'Enterprise',
@@ -668,10 +700,11 @@ export const translations = {
         price: '$0',
         period: '/mes',
         features: [
-          'Seguimiento básico del embarazo',
+          'Acceso a contenidos básicos',
           'Rastreador de sueño del bebé',
           'Calendario de vacunas',
-          'Comunidad de madres'
+          'Comunidad online de madres',
+          'Newsletter semanal'
         ],
         cta: 'Comenzar Gratis'
       },
@@ -686,12 +719,27 @@ export const translations = {
           'Planificación financiera completa',
           'IA integrada ilimitada',
           'Subir exámenes y documentos',
-          'Consultoría con expertos',
-          'Tienda con cashback',
-          'Soporte prioritario',
+          'Tienda con cashback exclusivo',
           'Sin anuncios'
         ],
         cta: 'Suscribir Premium'
+      },
+      maternityProgram: {
+        name: 'Programa Premium Maternidad Financiera',
+        price: '$95.80',
+        period: 'único O 12x $9.80',
+        features: [
+          'Los 13 módulos completos',
+          'Planificación financiera completa',
+          'IA integrada ilimitada',
+          'Subir exámenes y documentos',
+          '✨ Consultoría con expertos',
+          'Tienda con cashback exclusivo',
+          '✨ Soporte prioritario 24/7',
+          'Sin anuncios',
+          'Acceso vitalicio al programa'
+        ],
+        cta: 'Suscribir Programa Premium'
       },
       enterprise: {
         name: 'Empresarial',

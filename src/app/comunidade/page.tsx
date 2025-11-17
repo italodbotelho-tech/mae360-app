@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { 
   Users, MessageCircle, Heart, Send, Search, 
   Plus, ArrowLeft, TrendingUp, Award, Image as ImageIcon, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslation, type Language } from '@/lib/i18n';
-import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 interface Post {
@@ -20,151 +18,133 @@ interface Post {
   likes_count: number;
   comments_count: number;
   created_at: string;
-  profiles: {
-    full_name: string;
-    avatar_url: string | null;
-  };
+  author_name: string;
+  avatar_color: string;
 }
 
+// Posts de exemplo
+const mockPosts: Post[] = [
+  {
+    id: '1',
+    user_id: '1',
+    content: 'Acabei de descobrir que estou grávida! Estou tão feliz e nervosa ao mesmo tempo. Alguém tem dicas para primeira viagem? 💕',
+    image_url: null,
+    likes_count: 24,
+    comments_count: 8,
+    created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    author_name: 'Maria Silva',
+    avatar_color: 'from-pink-500 to-rose-500'
+  },
+  {
+    id: '2',
+    user_id: '2',
+    content: 'Meu bebê completou 6 meses hoje! O tempo voa... Compartilhando essa alegria com vocês! 🎉👶',
+    image_url: null,
+    likes_count: 42,
+    comments_count: 15,
+    created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
+    author_name: 'Ana Costa',
+    avatar_color: 'from-purple-500 to-pink-500'
+  },
+  {
+    id: '3',
+    user_id: '3',
+    content: 'Alguém mais está tendo dificuldade com o sono do bebê? Preciso de dicas urgentes! 😴',
+    image_url: null,
+    likes_count: 18,
+    comments_count: 23,
+    created_at: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
+    author_name: 'Juliana Santos',
+    avatar_color: 'from-blue-500 to-cyan-500'
+  },
+  {
+    id: '4',
+    user_id: '4',
+    content: 'Compartilhando minha experiência com amamentação. Foi desafiador no início, mas agora está maravilhoso! Não desistam, mães! 💪',
+    image_url: null,
+    likes_count: 56,
+    comments_count: 12,
+    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    author_name: 'Carla Mendes',
+    avatar_color: 'from-green-500 to-emerald-500'
+  },
+  {
+    id: '5',
+    user_id: '5',
+    content: 'Primeira consulta de pré-natal hoje! Estou nas nuvens! ☁️💕',
+    image_url: null,
+    likes_count: 31,
+    comments_count: 6,
+    created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+    author_name: 'Beatriz Lima',
+    avatar_color: 'from-orange-500 to-amber-500'
+  }
+];
+
 export default function CommunityModule() {
-  const router = useRouter();
   const [language] = useState<Language>('pt');
   const t = useTranslation(language);
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [newPostContent, setNewPostContent] = useState('');
   const [posting, setPosting] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    checkUser();
-    fetchPosts();
-  }, []);
-
-  const checkUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setUser(user);
-  };
-
-  const fetchPosts = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('posts')
-        .select(`
-          *,
-          profiles (
-            full_name,
-            avatar_url
-          )
-        `)
-        .order('created_at', { ascending: false })
-        .limit(20);
-
-      if (error) throw error;
-      setPosts(data || []);
-    } catch (error) {
-      console.error('Erro ao buscar posts:', error);
-      toast.error('Erro ao carregar posts');
-    } finally {
+    // Simular carregamento
+    setTimeout(() => {
+      setPosts(mockPosts);
       setLoading(false);
-    }
-  };
+    }, 500);
+  }, []);
 
   const handleNewPost = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!user) {
-      toast.error('Faça login para postar');
-      router.push('/auth/login');
-      return;
-    }
-
     if (!newPostContent.trim()) return;
 
     setPosting(true);
 
-    try {
-      const { data, error } = await supabase
-        .from('posts')
-        .insert({
-          user_id: user.id,
-          content: newPostContent,
-          likes_count: 0,
-          comments_count: 0,
-        })
-        .select(`
-          *,
-          profiles (
-            full_name,
-            avatar_url
-          )
-        `)
-        .single();
+    // Simular criação de post
+    setTimeout(() => {
+      const newPost: Post = {
+        id: Date.now().toString(),
+        user_id: 'current-user',
+        content: newPostContent,
+        image_url: null,
+        likes_count: 0,
+        comments_count: 0,
+        created_at: new Date().toISOString(),
+        author_name: 'Você',
+        avatar_color: 'from-pink-500 to-purple-500'
+      };
 
-      if (error) throw error;
-
-      // Adicionar novo post ao topo da lista
-      setPosts([data, ...posts]);
+      setPosts([newPost, ...posts]);
       setNewPostContent('');
       toast.success('Post criado com sucesso!');
-    } catch (error) {
-      console.error('Erro ao criar post:', error);
-      toast.error('Erro ao criar post. Tente novamente.');
-    } finally {
       setPosting(false);
-    }
+    }, 1000);
   };
 
-  const handleLike = async (postId: string, currentLikes: number) => {
-    if (!user) {
-      toast.error('Faça login para curtir');
-      router.push('/auth/login');
-      return;
-    }
-
-    try {
-      // Verificar se já deu like
-      const { data: existingLike } = await supabase
-        .from('likes')
-        .select('id')
-        .eq('post_id', postId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (existingLike) {
-        // Remover like
-        await supabase
-          .from('likes')
-          .delete()
-          .eq('post_id', postId)
-          .eq('user_id', user.id);
-
-        await supabase
-          .from('posts')
-          .update({ likes_count: currentLikes - 1 })
-          .eq('id', postId);
-
-        setPosts(posts.map(post => 
-          post.id === postId ? { ...post, likes_count: currentLikes - 1 } : post
-        ));
-      } else {
-        // Adicionar like
-        await supabase
-          .from('likes')
-          .insert({ post_id: postId, user_id: user.id });
-
-        await supabase
-          .from('posts')
-          .update({ likes_count: currentLikes + 1 })
-          .eq('id', postId);
-
-        setPosts(posts.map(post => 
-          post.id === postId ? { ...post, likes_count: currentLikes + 1 } : post
-        ));
-      }
-    } catch (error) {
-      console.error('Erro ao curtir post:', error);
-      toast.error('Erro ao curtir post');
+  const handleLike = (postId: string, currentLikes: number) => {
+    const isLiked = likedPosts.has(postId);
+    
+    if (isLiked) {
+      // Remover like
+      setLikedPosts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(postId);
+        return newSet;
+      });
+      setPosts(posts.map(post => 
+        post.id === postId ? { ...post, likes_count: currentLikes - 1 } : post
+      ));
+    } else {
+      // Adicionar like
+      setLikedPosts(prev => new Set(prev).add(postId));
+      setPosts(posts.map(post => 
+        post.id === postId ? { ...post, likes_count: currentLikes + 1 } : post
+      ));
     }
   };
 
@@ -179,17 +159,6 @@ export default function CommunityModule() {
     if (diffInHours < 24) return `${diffInHours}h atrás`;
     if (diffInDays === 1) return '1 dia atrás';
     return `${diffInDays} dias atrás`;
-  };
-
-  const getAvatarColor = (index: number) => {
-    const colors = [
-      'from-pink-500 to-rose-500',
-      'from-purple-500 to-pink-500',
-      'from-blue-500 to-cyan-500',
-      'from-green-500 to-emerald-500',
-      'from-orange-500 to-amber-500',
-    ];
-    return colors[index % colors.length];
   };
 
   const groups = [
@@ -230,19 +199,19 @@ export default function CommunityModule() {
                   <textarea
                     value={newPostContent}
                     onChange={(e) => setNewPostContent(e.target.value)}
-                    placeholder={user ? "Compartilhe algo com a comunidade..." : "Faça login para postar"}
+                    placeholder="Compartilhe algo com a comunidade..."
                     className="w-full p-4 border border-gray-200 rounded-xl resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     rows={3}
-                    disabled={!user || posting}
+                    disabled={posting}
                   />
                   <div className="flex items-center justify-between mt-4">
-                    <Button type="button" variant="ghost" size="sm" disabled={!user}>
+                    <Button type="button" variant="ghost" size="sm">
                       <ImageIcon className="w-4 h-4 mr-2" />
                       Foto
                     </Button>
                     <Button 
                       type="submit"
-                      disabled={!user || posting || !newPostContent.trim()}
+                      disabled={posting || !newPostContent.trim()}
                       className="bg-gradient-to-r from-violet-500 to-purple-600"
                     >
                       {posting ? (
@@ -272,22 +241,15 @@ export default function CommunityModule() {
                 <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Nenhum post ainda</h3>
                 <p className="text-gray-600 mb-4">Seja a primeira a compartilhar algo!</p>
-                {!user && (
-                  <Link href="/auth/cadastro">
-                    <Button className="bg-gradient-to-r from-pink-500 to-purple-600">
-                      Criar conta grátis
-                    </Button>
-                  </Link>
-                )}
               </div>
             ) : (
               <div className="space-y-6">
-                {posts.map((post, idx) => (
+                {posts.map((post) => (
                   <div key={post.id} className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
                     <div className="flex items-start gap-4 mb-4">
-                      <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${getAvatarColor(idx)} flex-shrink-0`} />
+                      <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${post.avatar_color} flex-shrink-0`} />
                       <div className="flex-1">
-                        <div className="font-bold">{post.profiles?.full_name || 'Usuário'}</div>
+                        <div className="font-bold">{post.author_name}</div>
                         <div className="text-sm text-gray-500">{getTimeAgo(post.created_at)}</div>
                       </div>
                     </div>
@@ -302,9 +264,13 @@ export default function CommunityModule() {
                     <div className="flex items-center gap-6 pt-4 border-t">
                       <button 
                         onClick={() => handleLike(post.id, post.likes_count)}
-                        className="flex items-center gap-2 text-gray-600 hover:text-pink-600 transition-colors"
+                        className={`flex items-center gap-2 transition-colors ${
+                          likedPosts.has(post.id) 
+                            ? 'text-pink-600' 
+                            : 'text-gray-600 hover:text-pink-600'
+                        }`}
                       >
-                        <Heart className="w-5 h-5" />
+                        <Heart className={`w-5 h-5 ${likedPosts.has(post.id) ? 'fill-pink-600' : ''}`} />
                         <span className="font-semibold">{post.likes_count}</span>
                       </button>
                       <button className="flex items-center gap-2 text-gray-600 hover:text-purple-600 transition-colors">
@@ -319,24 +285,6 @@ export default function CommunityModule() {
           </div>
 
           <div className="space-y-8">
-            {/* User Status */}
-            {!user && (
-              <div className="bg-gradient-to-br from-pink-500 to-purple-600 rounded-2xl p-6 text-white shadow-lg">
-                <h3 className="text-xl font-bold mb-2">Junte-se à comunidade!</h3>
-                <p className="text-pink-100 mb-4">Crie sua conta e comece a compartilhar sua jornada</p>
-                <Link href="/auth/cadastro">
-                  <Button className="w-full bg-white text-purple-600 hover:bg-pink-50">
-                    Criar conta grátis
-                  </Button>
-                </Link>
-                <Link href="/auth/login">
-                  <Button variant="ghost" className="w-full mt-2 text-white hover:bg-white/20">
-                    Já tenho conta
-                  </Button>
-                </Link>
-              </div>
-            )}
-
             {/* Search */}
             <div className="bg-white rounded-2xl p-4 shadow-lg">
               <div className="relative">

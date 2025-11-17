@@ -261,23 +261,26 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Enterprise Plan */}
-            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
-              <h3 className="text-2xl font-bold mb-2">{t.pricing.enterprise.name}</h3>
+            {/* Programa Maternidade Financeira Premium */}
+            <div className="bg-white rounded-2xl p-8 shadow-lg border-2 border-purple-300">
+              <h3 className="text-2xl font-bold mb-2 text-purple-900">{t.pricing.maternityProgram.name}</h3>
               <div className="mb-6">
-                <span className="text-4xl font-bold">{t.pricing.enterprise.price}</span>
+                <div className="text-4xl font-bold text-purple-600">{t.pricing.maternityProgram.price}</div>
+                <div className="text-gray-600">{t.pricing.maternityProgram.period}</div>
               </div>
               <ul className="space-y-3 mb-8">
-                {t.pricing.enterprise.features.map((feature, idx) => (
+                {t.pricing.maternityProgram.features.map((feature, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
                     <span className="text-gray-700">{feature}</span>
                   </li>
                 ))}
               </ul>
-              <Button className="w-full" variant="outline">
-                {t.pricing.enterprise.cta}
-              </Button>
+              <Link href="/checkout">
+                <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600">
+                  {t.pricing.maternityProgram.cta}
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
